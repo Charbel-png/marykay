@@ -8,7 +8,7 @@ class Producto extends Model
 {
     protected $table = 'productos';
     protected $primaryKey = 'producto_id';
-    public $timestamps = false;
+    public $timestamps = false; // porque tu tabla no tiene created_at/updated_at
 
     protected $fillable = [
         'sku',

@@ -17,14 +17,38 @@
             Mary Kay · Admin
         </a>
 
-        <div class="collapse navbar-collapse">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarAdmin" aria-controls="navbarAdmin"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarAdmin">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a href="{{ route('productos.index') }}" class="nav-link active">
-                        Catálogo de productos
+                    <a href="{{ route('productos.index') }}"
+                       class="nav-link {{ request()->routeIs('productos.index','catalogo.index') ? 'active' : '' }}">
+                        Productos
                     </a>
                 </li>
-                {{-- Aquí luego añadimos más módulos (clientes, pedidos, etc.) --}}
+                <li class="nav-item">
+                    <a href="{{ route('clientes.index') }}"
+                       class="nav-link {{ request()->routeIs('clientes.index') ? 'active' : '' }}">
+                        Clientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('vendedores.index') }}"
+                       class="nav-link {{ request()->routeIs('vendedores.index') ? 'active' : '' }}">
+                        Vendedores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('pedidos.index') }}"
+                       class="nav-link {{ request()->routeIs('pedidos.index') ? 'active' : '' }}">
+                        Pedidos
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

@@ -21,4 +21,9 @@ class Direccion extends Model
         'cp',
         'pais',
     ];
+
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class, 'cliente_id', 'cliente_id');
+    }
 }

@@ -26,6 +26,49 @@
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-uppercase" href="/">
+            Mary Kay · Admin
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarAdmin" aria-controls="navbarAdmin"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarAdmin">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a href="{{ route('productos.index') }}"
+                       class="nav-link {{ request()->routeIs('productos.index','catalogo.index') ? 'active' : '' }}">
+                        Productos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('clientes.index') }}"
+                       class="nav-link {{ request()->routeIs('clientes.index') ? 'active' : '' }}">
+                        Clientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('vendedores.index') }}"
+                       class="nav-link {{ request()->routeIs('vendedores.index') ? 'active' : '' }}">
+                        Vendedores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('pedidos.index') }}"
+                       class="nav-link {{ request()->routeIs('pedidos.index') ? 'active' : '' }}">
+                        Pedidos
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
 <header class="mk-header py-3 mb-4 shadow-sm">
     <div class="container d-flex flex-column flex-md-row justify-content-between align-items-md-center">
         <h1 class="h3 mb-2 mb-md-0">Catálogo Mary Kay</h1>

@@ -2,26 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Producto;
+use App\Models\Vendedor;
 use Illuminate\Http\Request;
 
-class ProductoController extends Controller
+class VendedorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Producto::with('categoria');
+        $query = Vendedor::with('supervisor')
+            ->withCount('pedidos');
 
         if ($request->filled('q')) {
             $busqueda = $request->input('q');
-
             $query->where(function ($q) use ($busqueda) {
                 $q->where('nombre', 'like', '%' . $busqueda . '%')
-                  ->orWhere('sku', 'like', '%' . $busqueda . '%');
+                  ->orWhere('email', 'like', '%' . $busqueda . '%');
             });
         }
 
-        $productos = $query->orderBy('nombre')->get();
+        $vendedores = $query->orderBy('nombre')->get();
 
-        return view('productos.index', compact('productos'));
+        return view('vendedores.index', compact('vendedores'));
     }
 }

@@ -2,15 +2,29 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\VendedorController;
+use App\Http\Controllers\PedidoController;
 
 Route::get('/', function () {
-    return view('welcome'); // o tu vista de inicio
+    return view('welcome');
 });
 
-// Ruta que ya funciona
+// Productos / catálogo
 Route::get('/productos', [ProductoController::class, 'index'])
     ->name('productos.index');
 
-// Hacer que /catalogo también muestre el mismo catálogo
 Route::get('/catalogo', [ProductoController::class, 'index'])
     ->name('catalogo.index');
+
+// Clientes
+Route::get('/clientes', [ClienteController::class, 'index'])
+    ->name('clientes.index');
+
+// Vendedores
+Route::get('/vendedores', [VendedorController::class, 'index'])
+    ->name('vendedores.index');
+
+// Pedidos
+Route::get('/pedidos', [PedidoController::class, 'index'])
+    ->name('pedidos.index');
