@@ -6,7 +6,7 @@
 
 <h1 class="h4 mb-1">Editar cliente</h1>
 <p class="text-muted mb-3">
-    Cliente #{{ $cliente->cliente_id }} · {{ $cliente->nombre_completo }}
+    {{ $cliente->nombre_completo }}
 </p>
 
 {{-- Errores de validación --}}

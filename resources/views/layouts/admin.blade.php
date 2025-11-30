@@ -14,23 +14,88 @@
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <style>
+        :root {
+            --mk-pink-bg: #f9d8e5;     /* fondo tipo imagen */
+            --mk-pink-light: #f7c1d6;  /* navbar / acentos claros */
+            --mk-pink-strong: #e86a9b; /* botones principales */
+            --mk-brown: #3b2628;       /* texto oscuro / headers */
+        }
+
         body {
-            background-color: #f8f9fa;
+            background-color: var(--mk-pink-bg);
         }
+
+        .navbar {
+            background-color: var(--mk-pink-light) !important;
+        }
+
         .navbar-brand {
-            letter-spacing: .05em;
+            letter-spacing: .08em;
+            color: var(--mk-brown) !important;
         }
-        .table td, .table th {
-            vertical-align: middle;
+
+        .nav-link {
+            color: #5b4144 !important;
+        }
+
+        .nav-link.active {
+            color: var(--mk-brown) !important;
+            font-weight: 700;
+            border-bottom: 2px solid var(--mk-brown);
+        }
+
+        .card {
+            border-radius: 0.8rem;
+        }
+
+        .card-header.bg-dark {
+            background-color: var(--mk-brown) !important;
+            border-bottom: none;
+        }
+
+        .card-header.bg-dark.text-white {
+            color: #fbeff5 !important;
+        }
+
+        .btn-dark {
+            background-color: var(--mk-pink-strong);
+            border-color: var(--mk-pink-strong);
+        }
+
+        .btn-dark:hover {
+            background-color: #d75287;
+            border-color: #d75287;
+        }
+
+        .btn-outline-dark {
+            color: var(--mk-pink-strong);
+            border-color: var(--mk-pink-strong);
+        }
+
+        .btn-outline-dark:hover {
+            background-color: var(--mk-pink-strong);
+            color: #fff;
+        }
+
+        .table thead.table-light {
+            background-color: #fdf1f5;
+        }
+
+        .badge.bg-success,
+        .badge.bg-info,
+        .badge.bg-warning,
+        .badge.bg-danger {
+            border-radius: 999px;
+            padding: 0.3rem 0.7rem;
         }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-light shadow-sm mb-4">
     <div class="container">
         <a class="navbar-brand fw-bold text-uppercase" href="{{ route('admin.dashboard') }}">
-            Mary Kay · Admin
+            MARY KAY · Admin
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -66,6 +131,16 @@
                     </a>
                 </li>
             </ul>
+            @auth
+                <form action="{{ route('logout') }}" method="POST" class="d-flex ms-3">
+                    @csrf
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-dark"
+                            title="Cerrar sesión">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
+            @endauth
         </div>
     </div>
 </nav>
@@ -74,7 +149,6 @@
     @yield('content')
 </div>
 
-{{-- Bootstrap JS (para menú responsive, etc.) --}}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
