@@ -8,7 +8,7 @@ class Cliente extends Model
 {
     protected $table = 'clientes';
     protected $primaryKey = 'cliente_id';
-    public $timestamps = false;
+    public $timestamps = false; // porque la tabla usa fecha_reg, no created_at/updated_at
 
     protected $fillable = [
         'nombres',
@@ -16,6 +16,10 @@ class Cliente extends Model
         'email',
         'telefono',
         'fecha_reg',
+    ];
+
+    protected $casts = [
+        'fecha_reg' => 'datetime',
     ];
 
     public function direcciones()
@@ -28,6 +32,7 @@ class Cliente extends Model
         return $this->hasMany(Pedido::class, 'cliente_id', 'cliente_id');
     }
 
+    // Accesor para usar $cliente->nombre_completo
     public function getNombreCompletoAttribute()
     {
         return trim($this->nombres . ' ' . $this->apellidos);

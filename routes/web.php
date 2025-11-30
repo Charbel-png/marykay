@@ -21,13 +21,8 @@ Route::get('/productos', [ProductoController::class, 'index'])
 Route::get('/catalogo', [ProductoController::class, 'index'])
     ->name('catalogo.index');
 
-// Clientes
-Route::get('/clientes', [ClienteController::class, 'index'])
-    ->name('clientes.index');
-Route::get('/clientes/crear',[ClienteController::class,'create'])
-    ->name('clientes.create');
-Route:get('/clientes',[ClienteController::class,'store'])
-    ->name('clientes.store');        
+// Clientes CRUD completo
+Route::resource('clientes', ClienteController::class)->except(['show']);
 
 // Vendedores
 Route::get('/vendedores', [VendedorController::class, 'index'])
