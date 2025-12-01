@@ -4,6 +4,8 @@
 
 @section('content')
 
+@php $role = Auth::user()->role ?? null; @endphp
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h3 mb-0">Productos</h1>
@@ -99,23 +101,25 @@
                                 </td>
                                 <td class="text-end">
                                     <a href="{{ route('productos.edit', $producto) }}"
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="Editar producto">
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="Editar producto">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
 
-                                    <form action="{{ route('productos.destroy', $producto) }}"
-                                          method="POST"
-                                          class="d-inline-block"
-                                          onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Eliminar producto">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    @if($role === 'admin')
+                                        <form action="{{ route('productos.destroy', $producto) }}"
+                                            method="POST"
+                                            class="d-inline-block"
+                                            onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Eliminar producto">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

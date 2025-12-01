@@ -44,19 +44,18 @@ Route::middleware(['auth', 'role:admin,operador'])->group(function () {
 // Rutas para CLIENTE (catálogo, pedidos, pagos)
 Route::middleware(['auth', 'role:cliente'])->group(function () {
 
-    // Catálogo de productos visible para el cliente
-    Route::get('/catalogo', [ProductoController::class, 'index'])
+    Route::get('/catalogo', [ProductoController::class, 'catalogoCliente'])
         ->name('catalogo.index');
+
+    // Añadir un producto al pedido (carrito)
+    Route::post('/catalogo/agregar/{producto}', [PedidoController::class, 'carritoAgregar'])
+        ->name('catalogo.agregar');
+
+    // Ver el pedido actual
+    Route::get('/mi-pedido', [PedidoController::class, 'carritoVer'])
+        ->name('catalogo.carrito');
+
+    // Confirmar pedido y guardarlo en la BD
+    Route::post('/mi-pedido/confirmar', [PedidoController::class, 'carritoConfirmar'])
+        ->name('catalogo.confirmar');
 });
-
-// Productos CRUD completo
-Route::resource('productos', ProductoController::class)->except(['show']);
-
-// Clientes CRUD completo
-Route::resource('clientes', ClienteController::class)->except(['show']);
-
-// Vendedores CRUD completo
-Route::resource('vendedores', VendedorController::class)->except(['show']);
-
-// Pedidos (lista + detalle)
-Route::resource('pedidos', PedidoController::class)->only(['index', 'show']);

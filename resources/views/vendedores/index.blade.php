@@ -4,6 +4,16 @@
 
 @section('content')
 
+@php $role = Auth::user()->role ?? null; @endphp
+
+@if($role === 'admin')
+    <a href="{{ route('vendedores.create') }}"
+       class="btn btn-sm btn-dark"
+       title="Registrar nuevo vendedor">
+        <i class="bi bi-person-plus-fill"></i>
+    </a>
+@endif
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h3 mb-0">Vendedores</h1>
@@ -84,24 +94,26 @@
                                 <td>{{ optional($vendedor->supervisor)->nombre ?? '—' }}</td>
                                 <td>{{ $vendedor->pedidos_count }}</td>
                                 <td class="text-end">
-                                    <a href="{{ route('vendedores.edit', $vendedor) }}"
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="Editar vendedor">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
+                                    @if($role === 'admin')
+                                        <a href="{{ route('vendedores.edit', $vendedor) }}"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="Editar vendedor">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
 
-                                    <form action="{{ route('vendedores.destroy', $vendedor) }}"
-                                          method="POST"
-                                          class="d-inline-block"
-                                          onsubmit="return confirm('¿Seguro que deseas eliminar este vendedor?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Eliminar vendedor">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                        <form action="{{ route('vendedores.destroy', $vendedor) }}"
+                                            method="POST"
+                                            class="d-inline-block"
+                                            onsubmit="return confirm('¿Seguro que deseas eliminar este vendedor?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Eliminar vendedor">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

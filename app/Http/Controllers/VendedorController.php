@@ -29,6 +29,10 @@ class VendedorController extends Controller
     // FORMULARIO CREAR
     public function create()
     {
+        if (auth()->user()->role !== 'admin') 
+            {
+                abort(403);
+            }
         $supervisores = Vendedor::orderBy('nombre')->get();
 
         return view('vendedores.create', compact('supervisores'));
@@ -37,6 +41,10 @@ class VendedorController extends Controller
     // GUARDAR NUEVO VENDEDOR
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'admin') 
+            {
+                abort(403);
+            }
         $datos = $request->validate([
             'nombre'        => 'required|string|max:150',
             'email'         => 'nullable|email|max:150',
@@ -61,6 +69,10 @@ class VendedorController extends Controller
     // FORMULARIO EDITAR
     public function edit(Vendedor $vendedor)
     {
+        if (auth()->user()->role !== 'admin') 
+            {
+                abort(403);
+            }
         $supervisores = Vendedor::where('vendedor_id', '!=', $vendedor->vendedor_id)
             ->orderBy('nombre')
             ->get();
@@ -71,6 +83,10 @@ class VendedorController extends Controller
     // ACTUALIZAR VENDEDOR
     public function update(Request $request, Vendedor $vendedor)
     {
+        if (auth()->user()->role !== 'admin') 
+            {
+                abort(403);
+            }
         $datos = $request->validate([
             'nombre'        => 'required|string|max:150',
             'email'         => 'nullable|email|max:150',
@@ -89,6 +105,10 @@ class VendedorController extends Controller
     // ELIMINAR VENDEDOR
     public function destroy(Vendedor $vendedor)
     {
+        if (auth()->user()->role !== 'admin') 
+            {
+                abort(403);
+            }
         try {
             $vendedor->delete();
 

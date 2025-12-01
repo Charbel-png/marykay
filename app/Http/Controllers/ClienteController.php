@@ -18,7 +18,9 @@ class ClienteController extends Controller
             $query->where(function ($q) use ($busqueda) {
                 $q->where('nombres', 'like', '%' . $busqueda . '%')
                   ->orWhere('apellidos', 'like', '%' . $busqueda . '%')
-                  ->orWhere('email', 'like', '%' . $busqueda . '%');
+                  ->orWhere('email', 'like', '%' . $busqueda . '%')
+                  ->orWhere('telefono', 'like', '%' . $busqueda . '%')
+                  ->orWhere('fecha_reg', 'like', '%' . $busqueda . '%');
             });
         }
 
@@ -86,16 +88,16 @@ class ClienteController extends Controller
     // ELIMINAR CLIENTE
     public function destroy(Cliente $cliente)
     {
-        // OJO: si tiene pedidos relacionados y hay FK, esto puede fallar.
-        // Para algo simple, intentamos y si truena, mandamos mensaje.
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
         try {
             $cliente->delete();
-            return redirect()
-                ->route('clientes.index')
+            return redirect()->route('clientes.index')
                 ->with('success', 'Cliente eliminado correctamente.');
         } catch (\Throwable $e) {
-            return redirect()
-                ->route('clientes.index')
+            return redirect()->route('clientes.index')
                 ->with('error', 'No se puede eliminar el cliente porque tiene información relacionada.');
         }
     }

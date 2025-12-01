@@ -4,10 +4,16 @@
 
 @section('content')
 
+@php
+    $role = auth()->user()->role ?? null;
+@endphp
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h3 mb-0">Clientes</h1>
-        <small class="text-muted">Administración de clientes Mary Kay</small>
+        <small class="text-muted">
+            Administración de clientes Mary Kay
+        </small>
     </div>
 
     <div class="d-flex">
@@ -32,7 +38,6 @@
     </div>
 </div>
 
-{{-- Mensajes flash --}}
 @if(session('success'))
     <div class="alert alert-success">
         {{ session('success') }}
@@ -62,7 +67,6 @@
                             <th>Nombre completo</th>
                             <th>Email</th>
                             <th>Teléfono</th>
-                            <th>Pedidos</th>
                             <th>Fecha registro</th>
                             <th class="text-end">Acciones</th>
                         </tr>
@@ -73,12 +77,7 @@
                                 <td>{{ $cliente->nombre_completo }}</td>
                                 <td>{{ $cliente->email ?? '—' }}</td>
                                 <td>{{ $cliente->telefono ?? '—' }}</td>
-                                <td>{{ $cliente->pedidos_count }}</td>
-                                <td>
-                                    {{ $cliente->fecha_reg
-                                        ? $cliente->fecha_reg->format('Y-m-d H:i')
-                                        : '—' }}
-                                </td>
+                                <td>{{ $cliente->fecha_reg }}</td>
                                 <td class="text-end">
                                     <a href="{{ route('clientes.edit', $cliente) }}"
                                        class="btn btn-sm btn-outline-primary"
@@ -86,18 +85,20 @@
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
 
-                                    <form action="{{ route('clientes.destroy', $cliente) }}"
-                                          method="POST"
-                                          class="d-inline-block"
-                                          onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Eliminar cliente">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    @if($role === 'admin')
+                                        <form action="{{ route('clientes.destroy', $cliente) }}"
+                                              method="POST"
+                                              class="d-inline-block"
+                                              onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Eliminar cliente">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

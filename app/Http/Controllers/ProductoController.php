@@ -99,16 +99,46 @@ class ProductoController extends Controller
     // ELIMINAR PRODUCTO
     public function destroy(Producto $producto)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
         try {
             $producto->delete();
-
-            return redirect()
-                ->route('productos.index')
+            return redirect()->route('productos.index')
                 ->with('success', 'Producto eliminado correctamente.');
         } catch (\Throwable $e) {
-            return redirect()
-                ->route('productos.index')
+            return redirect()->route('productos.index')
                 ->with('error', 'No se puede eliminar el producto porque tiene información relacionada (por ejemplo, pedidos).');
         }
+    }
+
+    public function catalogoCliente(Request $request)
+    {
+        $query = Producto::with('categoria');
+
+        if ($request->filled('q')) {
+            $busqueda = $request->input('q');
+            $query->where(function ($q2) use ($busqueda) {
+                $q2->where('nombre', 'like', '%' . $busqueda . '%')
+                ->orWhere('sku', 'like', '%' . $busqueda . '%');
+            });
+        }
+
+        $productos = $query->orderBy('nombre')->get();
+
+        // Carrito desde la sesión
+        $carrito = session()->get('carrito', []);
+        $total   = 0;
+
+        foreach ($carrito as &$item) {
+            $item['subtotal'] = $item['cantidad'] * $item['precio'];
+            $item['iva']      = $item['subtotal'] * 0.16;
+            $item['total']    = $item['subtotal'] + $item['iva'];
+            $total           += $item['total'];
+        }
+        unset($item);
+
+        return view('catalogo.index', compact('productos', 'carrito', 'total'));
     }
 }
