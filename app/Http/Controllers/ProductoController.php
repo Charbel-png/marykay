@@ -46,27 +46,38 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'sku'          => 'required|string|max:50|unique:productos,sku',
-            'nombre'       => 'required|string|max:150',
-            'descripcion'  => 'nullable|string',
-            'categoria_id' => 'required|exists:categorias,categoria_id',
-            'precio_lista' => 'required|numeric|min:0',
-            'unidad'       => 'required|string|max:20',
+            'nombre'        => 'required|string|max:150',
+            'sku'           => 'required|string|max:50|unique:productos,sku',
+            'descripcion'   => 'nullable|string',
+            'precio_lista'  => 'required|numeric|min:0',
+            'precio_venta'  => 'required|numeric|min:0',
+            'categoria_id'  => 'nullable|exists:categorias,categoria_id',
+            'existencia'    => 'required|integer|min:0',
+            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
+            'nombre.required'       => 'El nombre es obligatorio.',
             'sku.required'          => 'El SKU es obligatorio.',
-            'sku.unique'            => 'Ya existe un producto con este SKU.',
-            'nombre.required'       => 'El nombre del producto es obligatorio.',
-            'categoria_id.required' => 'Debes seleccionar una categoría.',
-            'categoria_id.exists'   => 'La categoría seleccionada no es válida.',
+            'sku.unique'            => 'Este SKU ya está registrado.',
             'precio_lista.required' => 'El precio de lista es obligatorio.',
-            'precio_lista.numeric'  => 'El precio debe ser numérico.',
+            'precio_venta.required' => 'El precio de venta es obligatorio.',
+            'precio_lista.numeric'  => 'El precio de lista debe ser numérico.',
+            'precio_venta.numeric'  => 'El precio de venta debe ser numérico.',
+            'existencia.required'   => 'La existencia es obligatoria.',
+            'existencia.integer'    => 'La existencia debe ser un número entero.',
+            'imagen.image'          => 'El archivo debe ser una imagen.',
+            'imagen.mimes'          => 'Solo se permiten imágenes JPG, JPEG, PNG o WEBP.',
+            'imagen.max'            => 'La imagen no debe pesar más de 2 MB.',
         ]);
+
+        if ($request->hasFile('imagen')) {
+            $ruta = $request->file('imagen')->store('productos', 'public');
+            $datos['imagen'] = $ruta;
+        }
 
         Producto::create($datos);
 
-        return redirect()
-            ->route('productos.index')
-            ->with('success', 'Producto registrado correctamente.');
+        return redirect()->route('productos.index')
+            ->with('success', 'Producto creado correctamente.');
     }
 
     // FORMULARIO EDITAR
@@ -81,18 +92,24 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto)
     {
         $datos = $request->validate([
-            'sku'          => 'required|string|max:50|unique:productos,sku,' . $producto->producto_id . ',producto_id',
-            'nombre'       => 'required|string|max:150',
-            'descripcion'  => 'nullable|string',
-            'categoria_id' => 'required|exists:categorias,categoria_id',
-            'precio_lista' => 'required|numeric|min:0',
-            'unidad'       => 'required|string|max:20',
+            'nombre'        => 'required|string|max:150',
+            'sku'           => 'required|string|max:50|unique:productos,sku,' . $producto->producto_id . ',producto_id',
+            'descripcion'   => 'nullable|string',
+            'precio_lista'  => 'required|numeric|min:0',
+            'precio_venta'  => 'required|numeric|min:0',
+            'categoria_id'  => 'nullable|exists:categorias,categoria_id',
+            'existencia'    => 'required|integer|min:0',
+            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('imagen')) {
+            $ruta = $request->file('imagen')->store('productos', 'public');
+            $datos['imagen'] = $ruta;
+        }
 
         $producto->update($datos);
 
-        return redirect()
-            ->route('productos.index')
+        return redirect()->route('productos.index')
             ->with('success', 'Producto actualizado correctamente.');
     }
 

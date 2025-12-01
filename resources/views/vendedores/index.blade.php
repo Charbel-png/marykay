@@ -4,15 +4,9 @@
 
 @section('content')
 
-@php $role = Auth::user()->role ?? null; @endphp
-
-@if($role === 'admin')
-    <a href="{{ route('vendedores.create') }}"
-       class="btn btn-sm btn-dark"
-       title="Registrar nuevo vendedor">
-        <i class="bi bi-person-plus-fill"></i>
-    </a>
-@endif
+@php
+    $role = auth()->user()->role ?? null;
+@endphp
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
@@ -34,15 +28,17 @@
             </button>
         </form>
 
-        <a href="{{ route('vendedores.create') }}"
-           class="btn btn-sm btn-dark"
-           title="Registrar nuevo vendedor">
-            <i class="bi bi-person-plus-fill"></i>
-        </a>
+        {{-- Solo el admin ve el botón rosa para agregar --}}
+        @if($role === 'admin')
+            <a href="{{ route('vendedores.create') }}"
+               class="btn btn-sm btn-mk"
+               title="Registrar nuevo vendedor">
+                <i class="bi bi-person-plus-fill"></i>
+            </a>
+        @endif
     </div>
 </div>
 
-{{-- Mensajes flash --}}
 @if(session('success'))
     <div class="alert alert-success">
         {{ session('success') }}
@@ -60,7 +56,7 @@
         No hay vendedores registrados o no se encontraron resultados.
     </div>
 @else
-    <div class="card mb-4 shadow-sm border-0">
+    <div class="card shadow-sm border-0">
         <div class="card-header bg-dark text-white">
             Lista de vendedores
         </div>
@@ -72,39 +68,30 @@
                             <th>Nombre</th>
                             <th>Email</th>
                             <th>Teléfono</th>
-                            <th>Estatus</th>
-                            <th>Supervisor</th>
-                            <th>Pedidos atendidos</th>
-                            <th class="text-end">Acciones</th>
+                            @if($role === 'admin')
+                                <th class="text-end">Acciones</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($vendedores as $vendedor)
+                        @foreach($vendedores as $vendedor)
                             <tr>
                                 <td>{{ $vendedor->nombre }}</td>
                                 <td>{{ $vendedor->email ?? '—' }}</td>
                                 <td>{{ $vendedor->telefono ?? '—' }}</td>
-                                <td>
-                                    @if($vendedor->estatus === 'activo')
-                                        <span class="badge bg-success">Activo</span>
-                                    @else
-                                        <span class="badge bg-secondary">Inactivo</span>
-                                    @endif
-                                </td>
-                                <td>{{ optional($vendedor->supervisor)->nombre ?? '—' }}</td>
-                                <td>{{ $vendedor->pedidos_count }}</td>
-                                <td class="text-end">
-                                    @if($role === 'admin')
+
+                                @if($role === 'admin')
+                                    <td class="text-end">
                                         <a href="{{ route('vendedores.edit', $vendedor) }}"
-                                        class="btn btn-sm btn-outline-primary"
-                                        title="Editar vendedor">
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Editar vendedor">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
 
                                         <form action="{{ route('vendedores.destroy', $vendedor) }}"
-                                            method="POST"
-                                            class="d-inline-block"
-                                            onsubmit="return confirm('¿Seguro que deseas eliminar este vendedor?');">
+                                              method="POST"
+                                              class="d-inline-block"
+                                              onsubmit="return confirm('¿Seguro que deseas eliminar este vendedor?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -113,8 +100,8 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
-                                    @endif
-                                </td>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>

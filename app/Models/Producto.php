@@ -10,13 +10,16 @@ class Producto extends Model
     protected $primaryKey = 'producto_id';
     public $timestamps = false;
 
-    protected $fillable = [
-        'sku',
+    protected $fillable = 
+    [
         'nombre',
+        'sku',
         'descripcion',
-        'categoria_id',
         'precio_lista',
+        'categoria_id',
         'unidad',
+        'existencia',
+        'imagen',
     ];
 
     public function categoria()

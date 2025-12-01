@@ -49,8 +49,18 @@
             <div class="row g-3">
                 @foreach($productos as $producto)
                     @php
-                        $img = asset('img/product-placeholder.png');
+                        if ($producto->imagen) 
+                            {
+                            $img = asset('storage/'.$producto->imagen);
+                            } else 
+                            {
+                            $img = asset('img/product-placeholder.png'); // fallback
+                            }
                     @endphp
+
+                    <img src="{{ $img }}"
+                        alt="{{ $producto->nombre }}"
+                        class="card-img-top">
 
                     <div class="col-12 col-sm-6 col-md-4">
                         <div class="card h-100 shadow-sm border-0">

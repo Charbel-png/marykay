@@ -17,9 +17,10 @@
     </div>
 @endif
 
-<form action="{{ route('productos.store') }}"
+<form action="{{ route('productos.update', $producto) }}"
       method="POST"
-      class="card p-3 shadow-sm border-0">
+      class="card p-3 shadow-sm border-0"
+      enctype="multipart/form-data">
     @csrf
 
     <div class="row">
@@ -107,6 +108,42 @@
             @error('unidad')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
+        </div>
+        <div class="mb-3">
+            <label for="imagen" class="form-label">Imagen del producto</label>
+            <input type="file"
+                name="imagen"
+                id="imagen"
+                class="form-control @error('imagen') is-invalid @enderror"
+                accept="image/*">
+            @error('imagen')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+            <small class="text-muted">Formatos: JPG, PNG, WEBP. Máx. 2 MB.</small>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                @if($producto->imagen)
+                    <img src="{{ asset('storage/'.$producto->imagen) }}"
+                        alt="{{ $producto->nombre }}"
+                        style="max-width: 200px; border-radius: .75rem;">
+                @else
+                    <span class="text-muted">Este producto aún no tiene imagen.</span>
+                @endif
+            </div>
+
+            <div class="col-md-6">
+                <label for="imagen" class="form-label">Cambiar imagen</label>
+                <input type="file"
+                    name="imagen"
+                    id="imagen"
+                    class="form-control @error('imagen') is-invalid @enderror"
+                    accept="image/*">
+                @error('imagen')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                <small class="text-muted">Formatos: JPG, PNG, WEBP. Máx. 2 MB.</small>
+            </div>
         </div>
     </div>
 

@@ -75,6 +75,7 @@
                 <table class="table table-striped align-middle mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th>Foto</th>
                             <th>SKU</th>
                             <th>Nombre</th>
                             <th>Categoría</th>
@@ -87,6 +88,14 @@
                     <tbody>
                         @foreach ($productos as $producto)
                             <tr>
+                                <td>@if($producto->imagen)
+                                        <img src="{{ asset('storage/'.$producto->imagen) }}"
+                                            alt="{{ $producto->nombre }}"
+                                            style="width: 48px; height: 48px; object-fit: cover; border-radius: 0.5rem;">
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
                                 <td>{{ $producto->sku }}</td>
                                 <td>{{ $producto->nombre }}</td>
                                 <td>{{ optional($producto->categoria)->nombre ?? 'Sin categoría' }}</td>

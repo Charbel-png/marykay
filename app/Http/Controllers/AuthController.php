@@ -12,11 +12,13 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
+    use Illuminate\Support\Facades\Auth;
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
-            'password' => ['required'],
+            'email'    => 'required|email',
+            'password' => 'required',
         ]);
 
         if (Auth::attempt($credentials)) {
@@ -24,7 +26,6 @@ class AuthController extends Controller
 
             $user = Auth::user();
 
-            // Redirección según rol
             if (in_array($user->role, ['admin', 'operador'])) {
                 return redirect()->route('admin.dashboard');
             }
@@ -33,17 +34,15 @@ class AuthController extends Controller
                 return redirect()->route('catalogo.index');
             }
 
-            // Si tiene un rol raro, lo sacamos
+            // Si por alguna razón tiene otro rol raro:
             Auth::logout();
-
-            return back()->withErrors([
-                'email' => 'Tu usuario no tiene un rol válido en el sistema.',
-            ]);
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Tu rol no tiene un destino configurado.']);
         }
 
-        return back()->withErrors([
-            'email' => 'Las credenciales no son válidas.',
-        ])->onlyInput('email');
+        return back()
+            ->withErrors(['email' => 'Credenciales incorrectas.'])
+            ->withInput();
     }
 
     public function logout(Request $request)
