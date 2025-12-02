@@ -94,7 +94,7 @@
                     name="precio_venta"
                     id="precio_venta"
                     class="form-control @error('precio_venta') is-invalid @enderror"
-                    value="{{ old('precio_venta', $producto->precio_venta) }}">
+                    value="{{ old('precio_venta', $producto->precio_venta ?? null) }}">
                 @error('precio_venta')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -106,7 +106,7 @@
                     name="existencia"
                     id="existencia"
                     class="form-control @error('existencia') is-invalid @enderror"
-                    value="{{ old('existencia', $producto->existencia) }}">
+                    value="{{ old('existencia', $producto->existencia ?? 0) }}">
                 @error('existencia')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

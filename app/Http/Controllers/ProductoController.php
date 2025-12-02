@@ -125,30 +125,31 @@ class ProductoController extends Controller
 
     public function catalogoCliente(Request $request)
     {
-        $query = Producto::with('categoria');
+        $consulta = Producto::with('categoria')
+            ->orderBy('nombre');
 
-        if ($request->filled('q')) {
-            $busqueda = $request->input('q');
-            $query->where(function ($q2) use ($busqueda) {
-                $q2->where('nombre', 'like', '%' . $busqueda . '%')
-                ->orWhere('sku', 'like', '%' . $busqueda . '%');
+        if ($busqueda = $request->input('q')) {
+            $consulta->where(function ($q) use ($busqueda) {
+                $q->where('nombre', 'like', "%{$busqueda}%")
+                ->orWhere('sku', 'like', "%{$busqueda}%");
             });
         }
 
-        $productos = $query->orderBy('nombre')->get();
+        $productos = $consulta->get();
 
-        // Carrito desde la sesión
+        // Carrito desde sesión
         $carrito = session()->get('carrito', []);
-        $total   = 0;
 
-        foreach ($carrito as &$item) {
-            $item['subtotal'] = $item['cantidad'] * $item['precio'];
-            $item['iva']      = $item['subtotal'] * 0.16;
-            $item['total']    = $item['subtotal'] + $item['iva'];
-            $total           += $item['total'];
+        // 🔢 Total correcto: precio unitario × cantidad
+        $total = 0;
+        foreach ($carrito as $item) {
+            $total += $item['precio'] * $item['cantidad'];
         }
-        unset($item);
 
-        return view('catalogo.index', compact('productos', 'carrito', 'total'));
+        return view('catalogo.index', [
+            'productos' => $productos,
+            'carrito'   => $carrito,
+            'total'     => $total,
+        ]);
     }
 }
