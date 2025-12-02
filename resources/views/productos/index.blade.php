@@ -4,35 +4,19 @@
 
 @section('content')
 
-@php $role = Auth::user()->role ?? null; @endphp
-
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h3 mb-0">Productos</h1>
-        <small class="text-muted">Catálogo administrativo de productos Mary Kay</small>
+        <small class="text-muted">Administración del catálogo Mary Kay</small>
     </div>
 
     <div class="d-flex">
-        {{-- Filtros / búsqueda --}}
         <form class="d-flex me-2" method="GET" action="{{ route('productos.index') }}">
             <input type="text"
                    name="q"
                    class="form-control form-control-sm me-2"
                    placeholder="Buscar por nombre o SKU"
                    value="{{ request('q') }}">
-
-            <select name="categoria_id"
-                    class="form-select form-select-sm me-2"
-                    style="max-width: 200px;">
-                <option value="">Todas las categorías</option>
-                @foreach($categorias as $categoria)
-                    <option value="{{ $categoria->categoria_id }}"
-                        {{ (string)request('categoria_id') === (string)$categoria->categoria_id ? 'selected' : '' }}>
-                        {{ $categoria->nombre }}
-                    </option>
-                @endforeach
-            </select>
-
             <button class="btn btn-sm btn-outline-dark"
                     type="submit"
                     title="Buscar productos">
@@ -41,23 +25,16 @@
         </form>
 
         <a href="{{ route('productos.create') }}"
-           class="btn btn-sm btn-dark"
+           class="btn btn-sm btn-mk"
            title="Registrar nuevo producto">
             <i class="bi bi-plus-lg"></i>
         </a>
     </div>
 </div>
 
-{{-- Mensajes flash --}}
 @if(session('success'))
     <div class="alert alert-success">
         {{ session('success') }}
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
     </div>
 @endif
 
@@ -76,59 +53,56 @@
                     <thead class="table-light">
                         <tr>
                             <th>Foto</th>
-                            <th>SKU</th>
                             <th>Nombre</th>
-                            <th>Categoría</th>
-                            <th>Descripción</th>
-                            <th class="text-end">Precio lista</th>
-                            <th class="text-center">Unidad</th>
+                            <th>SKU</th>
+                            <th class="text-end">Precio venta</th>
+                            <th class="text-center">Existencia</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($productos as $producto)
+                        @foreach($productos as $producto)
+                            @php
+                                if ($producto->imagen) {
+                                    $img = asset('storage/'.$producto->imagen);
+                                } else {
+                                    $img = asset('img/product-placeholder.png');
+                                }
+                            @endphp
+
                             <tr>
-                                <td>@if($producto->imagen)
-                                        <img src="{{ asset('storage/'.$producto->imagen) }}"
-                                            alt="{{ $producto->nombre }}"
-                                            style="width: 48px; height: 48px; object-fit: cover; border-radius: 0.5rem;">
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </td>
-                                <td>{{ $producto->sku }}</td>
-                                <td>{{ $producto->nombre }}</td>
-                                <td>{{ optional($producto->categoria)->nombre ?? 'Sin categoría' }}</td>
                                 <td>
-                                    {{ \Illuminate\Support\Str::limit($producto->descripcion, 60) }}
+                                    <img src="{{ $img }}"
+                                         alt="{{ $producto->nombre }}"
+                                         style="width: 48px; height: 48px; object-fit: cover; border-radius: .75rem;">
                                 </td>
+                                <td>{{ $producto->nombre }}</td>
+                                <td>{{ $producto->sku }}</td>
                                 <td class="text-end">
-                                    ${{ number_format($producto->precio_lista, 2) }}
+                                    ${{ number_format($producto->precio_venta, 2) }}
                                 </td>
                                 <td class="text-center">
-                                    {{ $producto->unidad }}
+                                    {{ $producto->existencia }}
                                 </td>
                                 <td class="text-end">
                                     <a href="{{ route('productos.edit', $producto) }}"
-                                    class="btn btn-sm btn-outline-primary"
-                                    title="Editar producto">
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Editar producto">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
 
-                                    @if($role === 'admin')
-                                        <form action="{{ route('productos.destroy', $producto) }}"
-                                            method="POST"
-                                            class="d-inline-block"
-                                            onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    title="Eliminar producto">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    @endif
+                                    <form action="{{ route('productos.destroy', $producto) }}"
+                                          method="POST"
+                                          class="d-inline-block"
+                                          onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Eliminar producto">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

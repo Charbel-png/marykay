@@ -4,6 +4,10 @@
 
 @section('content')
 
+@php
+    $role = auth()->user()->role ?? null;
+@endphp
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h3 mb-0">Editar vendedor</h1>
@@ -18,6 +22,17 @@
         <i class="bi bi-arrow-left"></i>
     </a>
 </div>
+
+@if($errors->any())
+    <div class="alert alert-danger">
+        <strong>Hay errores en el formulario:</strong>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 <form action="{{ route('vendedores.update', $vendedor) }}"
       method="POST"
@@ -63,7 +78,6 @@
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        {{-- Si tu tabla tiene más campos (zona, código, etc.), puedes agregarlos aquí igual que en la vista create --}}
     </div>
 
     <div class="d-flex justify-content-between align-items-center">

@@ -11,7 +11,6 @@ use App\Http\Controllers\PedidoController;
 
 // 🔹 Página raíz
 Route::get('/', function () {
-    // Si YA está autenticado, mándalo según su rol
     if (Auth::check()) {
         $role = Auth::user()->role;
 
@@ -24,7 +23,7 @@ Route::get('/', function () {
         }
     }
 
-    // Si NO está autenticado, mándalo al login
+    // No autenticado → login
     return redirect()->route('login');
 });
 

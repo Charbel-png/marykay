@@ -132,7 +132,7 @@
                 </li>
             </ul>
             @auth
-                <form action="{{ route('logout') }}" method="POST" class="d-flex ms-3">
+                <form action="{{ route('logout') }}" method="POST" class="ms-3">
                     @csrf
                     <button type="submit"
                             class="btn btn-sm btn-outline-dark"

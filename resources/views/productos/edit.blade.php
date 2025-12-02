@@ -86,19 +86,31 @@
             @enderror
         </div>
 
-        <div class="col-md-4 mb-3">
-            <label for="precio_lista" class="form-label">Precio lista *</label>
-            <input type="number"
-                   step="0.01"
-                   min="0"
-                   name="precio_lista"
-                   id="precio_lista"
-                   class="form-control @error('precio_lista') is-invalid @enderror"
-                   value="{{ old('precio_lista', $producto->precio_lista) }}"
-                   required>
-            @error('precio_lista')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="precio_venta" class="form-label">Precio de venta *</label>
+                <input type="number"
+                    step="0.01"
+                    name="precio_venta"
+                    id="precio_venta"
+                    class="form-control @error('precio_venta') is-invalid @enderror"
+                    value="{{ old('precio_venta', $producto->precio_venta) }}">
+                @error('precio_venta')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="col-md-4">
+                <label for="existencia" class="form-label">Existencia *</label>
+                <input type="number"
+                    name="existencia"
+                    id="existencia"
+                    class="form-control @error('existencia') is-invalid @enderror"
+                    value="{{ old('existencia', $producto->existencia) }}">
+                @error('existencia')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
         </div>
 
         <div class="col-md-4 mb-3">

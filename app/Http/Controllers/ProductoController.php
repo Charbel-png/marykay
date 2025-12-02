@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Categoria;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductoController extends Controller
 {
@@ -38,36 +39,24 @@ class ProductoController extends Controller
     public function create()
     {
         $categorias = Categoria::orderBy('nombre')->get();
-
         return view('productos.create', compact('categorias'));
     }
 
-    // GUARDAR NUEVO PRODUCTO
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'nombre'        => 'required|string|max:150',
-            'sku'           => 'required|string|max:50|unique:productos,sku',
-            'descripcion'   => 'nullable|string',
-            'precio_lista'  => 'required|numeric|min:0',
-            'precio_venta'  => 'required|numeric|min:0',
-            'categoria_id'  => 'nullable|exists:categorias,categoria_id',
-            'existencia'    => 'required|integer|min:0',
-            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ], [
-            'nombre.required'       => 'El nombre es obligatorio.',
-            'sku.required'          => 'El SKU es obligatorio.',
-            'sku.unique'            => 'Este SKU ya está registrado.',
-            'precio_lista.required' => 'El precio de lista es obligatorio.',
-            'precio_venta.required' => 'El precio de venta es obligatorio.',
-            'precio_lista.numeric'  => 'El precio de lista debe ser numérico.',
-            'precio_venta.numeric'  => 'El precio de venta debe ser numérico.',
-            'existencia.required'   => 'La existencia es obligatoria.',
-            'existencia.integer'    => 'La existencia debe ser un número entero.',
-            'imagen.image'          => 'El archivo debe ser una imagen.',
-            'imagen.mimes'          => 'Solo se permiten imágenes JPG, JPEG, PNG o WEBP.',
-            'imagen.max'            => 'La imagen no debe pesar más de 2 MB.',
+            'sku'          => 'required|string|max:50|unique:productos,sku',
+            'nombre'       => 'required|string|max:150',
+            'descripcion'  => 'nullable|string',
+            'categoria_id' => 'required|exists:categorias,categoria_id',
+            'precio_venta' => 'required|numeric|min:0',
+            'existencia'   => 'required|integer|min:0',
+            'imagen'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        // Ajustes a campos de la BD
+        $datos['precio_lista'] = $datos['precio_venta'];
+        $datos['unidad']       = 'pieza';                 // fijo
 
         if ($request->hasFile('imagen')) {
             $ruta = $request->file('imagen')->store('productos', 'public');
@@ -84,7 +73,6 @@ class ProductoController extends Controller
     public function edit(Producto $producto)
     {
         $categorias = Categoria::orderBy('nombre')->get();
-
         return view('productos.edit', compact('producto', 'categorias'));
     }
 
@@ -92,17 +80,22 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto)
     {
         $datos = $request->validate([
-            'nombre'        => 'required|string|max:150',
-            'sku'           => 'required|string|max:50|unique:productos,sku,' . $producto->producto_id . ',producto_id',
-            'descripcion'   => 'nullable|string',
-            'precio_lista'  => 'required|numeric|min:0',
-            'precio_venta'  => 'required|numeric|min:0',
-            'categoria_id'  => 'nullable|exists:categorias,categoria_id',
-            'existencia'    => 'required|integer|min:0',
-            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'sku'          => 'required|string|max:50|unique:productos,sku,' . $producto->producto_id . ',producto_id',
+            'nombre'       => 'required|string|max:150',
+            'descripcion'  => 'nullable|string',
+            'categoria_id' => 'required|exists:categorias,categoria_id',
+            'precio_venta' => 'required|numeric|min:0',
+            'existencia'   => 'required|integer|min:0',
+            'imagen'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
+        $datos['precio_lista'] = $datos['precio_venta'];
+        $datos['unidad']       = 'pieza';
+
         if ($request->hasFile('imagen')) {
+            if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
+                Storage::disk('public')->delete($producto->imagen);
+            }
             $ruta = $request->file('imagen')->store('productos', 'public');
             $datos['imagen'] = $ruta;
         }

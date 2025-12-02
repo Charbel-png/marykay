@@ -9,10 +9,20 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
+        if (Auth::check()) {
+            $role = Auth::user()->role;
+
+            if (in_array($role, ['admin', 'operador'])) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            if ($role === 'cliente') {
+                return redirect()->route('catalogo.index');
+            }
+        }
+
         return view('auth.login');
     }
-
-    use Illuminate\Support\Facades\Auth;
 
     public function login(Request $request)
     {

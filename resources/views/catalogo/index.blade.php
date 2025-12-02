@@ -39,8 +39,9 @@
 @endif
 
 <div class="row g-3">
-    {{-- Columna izquierda: catálogo --}}
-    <div class="col-12 col-lg-8">
+
+    {{-- 🟣 SECCIÓN PRODUCTOS: ocupa casi toda la página --}}
+    <div class="col-12 col-xl-10 order-2 order-xl-1">
         @if($productos->isEmpty())
             <div class="alert alert-info">
                 Por ahora no hay productos disponibles.
@@ -49,48 +50,61 @@
             <div class="row g-3">
                 @foreach($productos as $producto)
                     @php
-                        if ($producto->imagen) 
-                            {
+                        // Imagen por producto (o placeholder)
+                        if ($producto->imagen) {
                             $img = asset('storage/'.$producto->imagen);
-                            } else 
-                            {
-                            $img = asset('img/product-placeholder.png'); // fallback
-                            }
+                        } else {
+                            $img = asset('img/product-placeholder.png');
+                        }
+                        // Agotado si no hay existencia
+                        $agotado = $producto->existencia <= 0;
                     @endphp
 
-                    <img src="{{ $img }}"
-                        alt="{{ $producto->nombre }}"
-                        class="card-img-top">
-
-                    <div class="col-12 col-sm-6 col-md-4">
+                    <div class="col-12 col-sm-6 col-md-4 col-xl-3">
                         <div class="card h-100 shadow-sm border-0">
                             <img src="{{ $img }}"
                                  alt="{{ $producto->nombre }}"
-                                 class="card-img-top">
+                                 class="card-img-top"
+                                 style="height: 170px; object-fit: cover;">
 
                             <div class="card-body d-flex flex-column">
-                                <small class="text-muted text-uppercase">
-                                    {{ optional($producto->categoria)->nombre ?? 'Sin categoría' }}
+                                <small class="text-muted text-uppercase d-flex justify-content-between">
+                                    <span>{{ optional($producto->categoria)->nombre ?? 'Sin categoría' }}</span>
+                                    @if($agotado)
+                                        <span class="badge bg-secondary">Agotado</span>
+                                    @endif
                                 </small>
+
                                 <h5 class="card-title mt-1">{{ $producto->nombre }}</h5>
                                 <p class="card-text small text-muted">
-                                    {{ \Illuminate\Support\Str::limit($producto->descripcion, 80) }}
+                                    {{ \Illuminate\Support\Str::limit($producto->descripcion, 70) }}
+                                </p>
+
+                                {{-- 👇 NUEVO: mostrar existencia visible para el cliente --}}
+                                <p class="card-text small text-muted mb-2">
+                                    Existencia: {{ $producto->existencia }} {{ $producto->existencia === 1 ? 'pieza' : 'piezas' }}
                                 </p>
 
                                 <div class="mt-auto d-flex justify-content-between align-items-center">
-                                    <strong>${{ number_format($producto->precio_lista, 2) }}</strong>
+                                    <strong>${{ number_format($producto->precio_venta, 2) }}</strong>
 
-                                    <form action="{{ route('catalogo.agregar', $producto) }}"
-                                          method="POST"
-                                          class="d-inline">
-                                        @csrf
-                                        <input type="hidden" name="cantidad" value="1">
-                                        <button type="submit"
-                                                class="btn btn-sm btn-mk"
-                                                title="Añadir al pedido">
-                                            Añadir
+                                    @if(!$agotado)
+                                        <form action="{{ route('catalogo.agregar', $producto) }}"
+                                            method="POST"
+                                            class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="cantidad" value="1">
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-mk"
+                                                    title="Añadir al pedido">
+                                                Añadir
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>
+                                            Agotado
                                         </button>
-                                    </form>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -100,45 +114,49 @@
         @endif
     </div>
 
-    {{-- Columna derecha: resumen del pedido --}}
-    <div class="col-12 col-lg-4">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-dark text-white">
+    {{-- 🟡 SECCIÓN "MI PEDIDO": panel pequeñito a la derecha --}}
+    <div class="col-12 col-xl-2 order-1 order-xl-2">
+        <div class="card shadow-sm border-0"
+             style="max-height: 300px;">
+            <div class="card-header bg-dark text-white py-2">
                 Mi pedido
             </div>
-            <div class="card-body">
+            <div class="card-body py-2">
                 @if(empty($carrito))
-                    <p class="text-muted mb-0">
-                        Aún no has añadido productos. Usa el botón <strong>Añadir</strong> en el catálogo.
+                    <p class="text-muted mb-0 small">
+                        Aún no has añadido productos. Usa el botón <strong>Añadir</strong>.
                     </p>
                 @else
-                    <div class="mb-2" style="max-height: 260px; overflow-y: auto;">
+                    <div class="mb-2" style="max-height: 160px; overflow-y: auto;">
                         @foreach($carrito as $item)
-                            <div class="d-flex justify-content-between mb-2">
+                            <div class="d-flex justify-content-between mb-1">
                                 <div>
-                                    <strong class="d-block">{{ $item['nombre'] }}</strong>
+                                    <strong class="d-block small">{{ $item['nombre'] }}</strong>
                                     <small class="text-muted">
-                                        x{{ $item['cantidad'] }} · ${{ number_format($item['precio'], 2) }}
+                                        x{{ $item['cantidad'] }}
+                                        · ${{ number_format($item['precio'], 2) }}
                                     </small>
                                 </div>
                                 <div class="text-end">
-                                    <small class="d-block text-muted">Total</small>
-                                    <strong>${{ number_format($item['total'], 2) }}</strong>
+                                    <small class="d-block text-muted small">Total</small>
+                                    <strong class="small">
+                                        ${{ number_format($item['total'], 2) }}
+                                    </strong>
                                 </div>
                             </div>
                             <hr class="my-1">
                         @endforeach
                     </div>
 
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Total del pedido:</span>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small">Total del pedido:</span>
                         <strong>${{ number_format($total, 2) }}</strong>
                     </div>
 
                     <form action="{{ route('catalogo.confirmar') }}" method="POST">
                         @csrf
                         <button type="submit"
-                                class="btn btn-mk w-100">
+                                class="btn btn-mk w-100 btn-sm">
                             Confirmar pedido
                         </button>
                     </form>

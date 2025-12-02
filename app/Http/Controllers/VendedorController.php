@@ -83,25 +83,21 @@ class VendedorController extends Controller
     // ACTUALIZAR VENDEDOR
     public function update(Request $request, Vendedor $vendedor)
     {
-        if (auth()->user()->role !== 'admin') 
-            {
-                abort(403);
-            }
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
         $datos = $request->validate([
-            'nombre'        => 'required|string|max:150',
-            'email'         => 'nullable|email|max:150',
-            'telefono'      => 'nullable|string|max:20',
-            'estatus'       => 'required|in:activo,inactivo',
-            'supervisor_id' => 'nullable|exists:vendedores,vendedor_id',
+            'nombre'   => 'required|string|max:150',
+            'email'    => 'nullable|email|max:150',
+            'telefono' => 'nullable|string|max:50',
         ]);
 
         $vendedor->update($datos);
 
-        return redirect()
-            ->route('vendedores.index')
+        return redirect()->route('vendedores.index')
             ->with('success', 'Vendedor actualizado correctamente.');
     }
-
     // ELIMINAR VENDEDOR
     public function destroy(Vendedor $vendedor)
     {

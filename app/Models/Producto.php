@@ -12,13 +12,13 @@ class Producto extends Model
 
     protected $fillable = 
     [
-        'nombre',
         'sku',
+        'nombre',
         'descripcion',
-        'precio_lista',
         'categoria_id',
+        'precio_venta',
+        'existencia',      
         'unidad',
-        'existencia',
         'imagen',
     ];
 

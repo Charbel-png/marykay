@@ -90,18 +90,26 @@ class PedidoController extends Controller
             $cantidad = 1;
         }
 
-        $carrito = session()->get('carrito', []);
+        // Validar existencia
+        if ($producto->existencia < $cantidad) {
+            return back()->with('error', 'No hay existencia suficiente de este producto.');
+        }
 
+        $carrito = session()->get('carrito', []);
         $id = $producto->producto_id;
 
         if (isset($carrito[$id])) {
-            $carrito[$id]['cantidad'] += $cantidad;
+            $nuevaCantidad = $carrito[$id]['cantidad'] + $cantidad;
+            if ($nuevaCantidad > $producto->existencia) {
+                return back()->with('error', 'No puedes añadir más piezas de las que hay en existencia.');
+            }
+            $carrito[$id]['cantidad'] = $nuevaCantidad;
         } else {
             $carrito[$id] = [
                 'producto_id' => $id,
                 'nombre'      => $producto->nombre,
                 'sku'         => $producto->sku,
-                'precio'      => $producto->precio_lista,
+                'precio'      => $producto->precio_venta,
                 'cantidad'    => $cantidad,
             ];
         }
@@ -110,7 +118,6 @@ class PedidoController extends Controller
 
         return back()->with('success', 'Producto añadido al pedido.');
     }
-
     // Ver el carrito / pedido actual
     public function carritoVer()
     {
