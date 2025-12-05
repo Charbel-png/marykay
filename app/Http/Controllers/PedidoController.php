@@ -251,8 +251,9 @@ class PedidoController extends Controller
             // Vaciar carrito
             session()->forget('carrito');
 
-            return redirect()->route('catalogo.index')
-                ->with('success', "Tu pedido #{$pedido->pedido_id} fue registrado correctamente.");
+            return redirect()->route('cliente.pedidos.show', $pedido)
+    ->with('success', "Tu pedido #{$pedido->pedido_id} fue registrado correctamente.");
+
         } catch (\Throwable $e) {
             DB::rollBack();
             return back()->with('error', 'No se pudo registrar tu pedido: ' . $e->getMessage());
@@ -261,23 +262,24 @@ class PedidoController extends Controller
     // ===================== HISTORIAL DEL CLIENTE =====================
 
     public function historialCliente()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
+    $cliente = Cliente::where('email', $user->email)->first();
 
-        $cliente = Cliente::where('email', $user->email)->first();
-
-        if (!$cliente) {
-            return redirect()->route('catalogo.index')
-                ->with('error', 'No se encontró un cliente asociado a tu usuario.');
-        }
-
-        $pedidos = Pedido::with('estado')
-            ->where('cliente_id', $cliente->cliente_id)
-            ->orderBy('fecha', 'desc')
-            ->get();
-
-        return view('cliente.pedidos.index', compact('pedidos'));
+    if (!$cliente) {
+        return redirect()->route('catalogo.index')
+            ->with('error', 'No se encontró un cliente asociado a tu usuario.');
     }
+
+    $pedidos = Pedido::with('estado')
+        ->where('cliente_id', $cliente->cliente_id)
+        ->orderBy('fecha', 'desc')
+        ->get();
+
+    // 👇 MUY IMPORTANTE: ruta de la vista del cliente
+    return view('cliente.pedidos.index', compact('pedidos'));
+}
+
 
     public function detalleCliente(Pedido $pedido)
     {
@@ -293,7 +295,6 @@ class PedidoController extends Controller
             'detalles.producto',
         ]);
 
-        // Reutilizamos la lógica de totales (simplificada)
         $detalles = $pedido->detalles->map(function ($detalle) {
             $subtotal = $detalle->cantidad * $detalle->precio_unitario;
             $detalle->subtotal_calculado = $subtotal;
@@ -311,65 +312,114 @@ class PedidoController extends Controller
         ]);
     }
     public function cancelarCliente(Pedido $pedido)
-    {
-        $user = auth()->user();
-        $cliente = Cliente::where('email', $user->email)->first();
+{
+    $user    = auth()->user();
+    $cliente = Cliente::where('email', $user->email)->first();
 
-        if (!$cliente || $pedido->cliente_id !== $cliente->cliente_id) {
-            abort(403);
-        }
-
-        $pedido->load('estado', 'detalles');
-
-        $estadoCanceladoId = $this->getEstadoCanceladoId();
-        if (!$estadoCanceladoId) {
-            return back()->with('error', 'No está configurado el estado "Cancelado" en la tabla estados de pedido.');
-        }
-
-        // Ya cancelado
-        if ($pedido->estado_id == $estadoCanceladoId) {
-            return back()->with('error', 'Este pedido ya está cancelado.');
-        }
-
-        // Opcional: solo permitir cancelar si está pendiente
-        if ($pedido->estado && strtolower($pedido->estado->nombre) !== 'pendiente') {
-            return back()->with('error', 'Solo se pueden cancelar pedidos en estado "Pendiente".');
-        }
-
-        try {
-            $this->cancelarPedidoYRevertirStock($pedido, $estadoCanceladoId);
-
-            return back()->with('success', 'Tu pedido fue cancelado y el stock fue restablecido.');
-        } catch (\Throwable $e) {
-            return back()->with('error', 'No se pudo cancelar el pedido: ' . $e->getMessage());
-        }
+    if (!$cliente || $pedido->cliente_id !== $cliente->cliente_id) {
+        abort(403);
     }
+
+    $pedido->load('estado', 'detalles');
+
+    $estadoCanceladoId = $this->getEstadoCanceladoId();
+    if (!$estadoCanceladoId) {
+        return back()->with('error', 'No está configurado el estado "Cancelado" en la tabla estados de pedido.');
+    }
+
+    $estadoActual = mb_strtolower($pedido->estado->nombre ?? '', 'UTF-8');
+
+    // Solo se puede cancelar si está en Creado, Pagado o Enviado
+    $permitidosCancelar = ['creado', 'pagado', 'enviado'];
+
+    if (!in_array($estadoActual, $permitidosCancelar)) {
+        return back()->with(
+            'error',
+            'Solo se pueden cancelar pedidos en estado Creado, Pagado o Enviado.'
+        );
+    }
+
+    try {
+        $this->cancelarPedidoYRevertirStock($pedido, $estadoCanceladoId);
+
+        return back()->with('success', 'Tu pedido fue cancelado y el stock fue restablecido.');
+    } catch (\Throwable $e) {
+        return back()->with('error', 'No se pudo cancelar el pedido: ' . $e->getMessage());
+    }
+}
+public function pagarCliente(Pedido $pedido)
+{
+    $user    = auth()->user();
+    $cliente = Cliente::where('email', $user->email)->first();
+
+    // Asegurarnos de que el pedido sí es de este cliente
+    if (!$cliente || $pedido->cliente_id !== $cliente->cliente_id) {
+        abort(403);
+    }
+
+    $pedido->load('estado');
+
+    // Sacar el ID del estado "Pagado"
+    $estadoPagadoId = $this->getEstadoPagadoId();
+    if (!$estadoPagadoId) {
+        return back()->with('error', 'No está configurado el estado "Pagado" en la tabla estados de pedido.');
+    }
+
+    $estadoActual = mb_strtolower($pedido->estado->nombre ?? '', 'UTF-8');
+
+    if ($estadoActual !== 'creado') {
+        return back()->with(
+            'error',
+            'Solo puedes pagar pedidos en estado Creado.'
+        );
+    }
+
+    try {
+        $pedido->estado_id = $estadoPagadoId;
+        $pedido->save();
+
+        return back()->with('success', 'Tu pedido fue marcado como Pagado.');
+    } catch (\Throwable $e) {
+        return back()->with('error', 'No se pudo marcar el pedido como pagado: ' . $e->getMessage());
+    }
+}
+
+
     public function cancelarAdmin(Pedido $pedido)
-    {
-        $pedido->load('estado', 'detalles');
+{
+    $pedido->load('estado', 'detalles');
 
-        $estadoCanceladoId = $this->getEstadoCanceladoId();
-        if (!$estadoCanceladoId) {
-            return back()->with('error', 'No está configurado el estado "Cancelado" en la tabla estados de pedido.');
-        }
-
-        if ($pedido->estado_id == $estadoCanceladoId) {
-            return back()->with('error', 'Este pedido ya está cancelado.');
-        }
-
-        // Si quieres bloquear pedidos pagados/enviados:
-        if ($pedido->estado && in_array(strtolower($pedido->estado->nombre), ['pagado', 'enviado', 'completado'])) {
-            return back()->with('error', 'No se puede cancelar un pedido en estado ' . $pedido->estado->nombre . '.');
-        }
-
-        try {
-            $this->cancelarPedidoYRevertirStock($pedido, $estadoCanceladoId);
-
-            return back()->with('success', 'El pedido fue cancelado y el stock fue restablecido.');
-        } catch (\Throwable $e) {
-            return back()->with('error', 'No se pudo cancelar el pedido: ' . $e->getMessage());
-        }
+    $estadoCanceladoId = $this->getEstadoCanceladoId();
+    if (!$estadoCanceladoId) {
+        return back()->with('error', 'No está configurado el estado "Cancelado" en la tabla estados de pedido.');
     }
+
+    $estadoActual = mb_strtolower($pedido->estado->nombre ?? '', 'UTF-8');
+
+    // Ya cancelado
+    if ($estadoActual === 'cancelado') {
+        return back()->with('error', 'Este pedido ya está cancelado.');
+    }
+
+    // Solo cancelar si está en Creado, Pagado o Enviado
+    $permitidosCancelar = ['creado', 'pagado', 'enviado'];
+
+    if (!in_array($estadoActual, $permitidosCancelar)) {
+        return back()->with(
+            'error',
+            'Solo se pueden cancelar pedidos en estado Creado, Pagado o Enviado.'
+        );
+    }
+
+    try {
+        $this->cancelarPedidoYRevertirStock($pedido, $estadoCanceladoId);
+
+        return back()->with('success', 'El pedido fue cancelado y el stock fue restablecido.');
+    } catch (\Throwable $e) {
+        return back()->with('error', 'No se pudo cancelar el pedido: ' . $e->getMessage());
+    }
+}
+
         // ===================== MÉTODOS AUXILIARES =====================
 
     /**
@@ -402,4 +452,44 @@ class PedidoController extends Controller
             $pedido->save();
         });
     }
+    protected function getEstadoDevueltoId()
+    {
+        $estado = EstadoPedido::whereRaw('LOWER(nombre) = ?', ['devuelto'])->first();
+        return $estado ? $estado->estado_id : null;
+    }
+    public function marcarDevuelto(Pedido $pedido)
+{
+    $pedido->load('estado', 'detalles');
+
+    $estadoDevueltoId = $this->getEstadoDevueltoId();
+    if (!$estadoDevueltoId) {
+        return back()->with('error', 'No está configurado el estado "Devuelto" en la tabla estados de pedido.');
+    }
+
+    $estadoActual = mb_strtolower($pedido->estado->nombre ?? '', 'UTF-8');
+
+    // Solo se puede marcar como devuelto si está Entregado
+    if ($estadoActual !== 'entregado') {
+        return back()->with(
+            'error',
+            'Solo se pueden marcar como devueltos los pedidos en estado Entregado.'
+        );
+    }
+
+    try {
+        // Reutilizamos el helper para cambiar estado y regresar stock
+        $this->cancelarPedidoYRevertirStock($pedido, $estadoDevueltoId);
+
+        return back()->with('success', 'El pedido fue marcado como Devuelto y el stock fue restablecido.');
+    } catch (\Throwable $e) {
+        return back()->with('error', 'No se pudo marcar el pedido como devuelto: ' . $e->getMessage());
+    }
+}
+protected function getEstadoPagadoId()
+{
+    $estado = EstadoPedido::whereRaw('LOWER(nombre) = ?', ['pagado'])->first();
+    return $estado ? $estado->estado_id : null;
+}
+
+
 }

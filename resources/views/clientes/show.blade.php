@@ -6,51 +6,12 @@
 
 <h1 class="h4 mb-3">Pedido #{{ $pedido->pedido_id }}</h1>
 
-@if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
-
-@if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
-@endif
-
 <p class="mb-1">
     <strong>Fecha:</strong> {{ $pedido->fecha }}
 </p>
 <p class="mb-3">
     <strong>Estado:</strong> {{ optional($pedido->estado)->nombre }}
 </p>
-
-@php
-    $estadoLower = mb_strtolower(optional($pedido->estado)->nombre ?? '', 'UTF-8');
-@endphp
-
-{{-- 🔘 ACCIONES: PAGAR / CANCELAR --}}
-<div class="mb-3 d-flex flex-wrap gap-2">
-    {{-- Pagar: solo si está Creado o Pendiente --}}
-    @if(in_array($estadoLower, ['creado','pendiente']))
-        <form action="{{ route('cliente.pedidos.pagar', $pedido) }}"
-              method="POST"
-              onsubmit="return confirm('¿Quieres marcar este pedido como Pagado?');">
-            @csrf
-            <button type="submit" class="btn btn-mk btn-sm">
-                Pagar pedido
-            </button>
-        </form>
-    @endif
-
-    {{-- Cancelar: si está Creado / Pendiente / Pagado / Enviado --}}
-    @if(in_array($estadoLower, ['creado','pendiente','pagado','enviado']))
-        <form action="{{ route('cliente.pedidos.cancelar', $pedido) }}"
-              method="POST"
-              onsubmit="return confirm('¿Cancelar este pedido y regresar el stock?');">
-            @csrf
-            <button type="submit" class="btn btn-outline-danger btn-sm">
-                Cancelar pedido
-            </button>
-        </form>
-    @endif
-</div>
 
 <div class="card shadow-sm border-0 mb-3">
     <div class="card-body table-responsive">

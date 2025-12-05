@@ -6,6 +6,7 @@ use App\Models\Producto;
 use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductoController extends Controller
 {
@@ -45,7 +46,6 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'sku'          => 'required|string|max:50|unique:productos,sku',
             'nombre'       => 'required|string|max:150',
             'descripcion'  => 'nullable|string',
             'categoria_id' => 'required|exists:categorias,categoria_id',
@@ -54,9 +54,11 @@ class ProductoController extends Controller
             'imagen'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Ajustes a campos de la BD
+        $datos['sku'] = $this->generarSku($datos['nombre']);
+
+        // Mantener consistencia
         $datos['precio_lista'] = $datos['precio_venta'];
-        $datos['unidad']       = 'pieza';                 // fijo
+        $datos['unidad']       = 'pieza';             // fijo
 
         if ($request->hasFile('imagen')) {
             $ruta = $request->file('imagen')->store('productos', 'public');
@@ -80,7 +82,6 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto)
     {
         $datos = $request->validate([
-            'sku'          => 'required|string|max:50|unique:productos,sku,' . $producto->producto_id . ',producto_id',
             'nombre'       => 'required|string|max:150',
             'descripcion'  => 'nullable|string',
             'categoria_id' => 'required|exists:categorias,categoria_id',
@@ -152,4 +153,13 @@ class ProductoController extends Controller
             'total'     => $total,
         ]);
     }
+    protected function generarSku(string $nombre): string
+{
+    $prefijo = 'MK';
+    $base    = strtoupper(Str::slug($nombre, '-')); // ej: BASE-MATTE-W130
+    $base    = substr($base, 0, 12);                // lo recortamos por si es muy largo
+
+    return $prefijo . '-' . $base . '-' . now()->format('His'); // MK-BASE-MATTE-123045
+}
+
 }

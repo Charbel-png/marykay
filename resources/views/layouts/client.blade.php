@@ -68,6 +68,13 @@
                         Catálogo
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('cliente.pedidos.*') ? 'active' : '' }}"
+                    href="{{ route('cliente.pedidos.index') }}">
+                        Mis pedidos
+                    </a>
+                </li>
+
                 {{-- Aquí después: Mis pedidos, Pagos, etc. --}}
             </ul>
 

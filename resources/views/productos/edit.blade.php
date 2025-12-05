@@ -28,19 +28,6 @@
     @method('PUT')
 
     <div class="row">
-        <div class="col-md-4 mb-3">
-            <label for="sku" class="form-label">SKU *</label>
-            <input type="text"
-                   name="sku"
-                   id="sku"
-                   class="form-control @error('sku') is-invalid @enderror"
-                   value="{{ old('sku', $producto->sku) }}"
-                   required>
-            @error('sku')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
         <div class="col-md-8 mb-3">
             <label for="nombre" class="form-label">Nombre *</label>
             <input type="text"

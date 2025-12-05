@@ -40,7 +40,6 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
-
 // =======================================================
 // 🔹 ADMIN + OPERADOR (panel administrativo)
 // =======================================================
@@ -69,6 +68,9 @@ Route::middleware(['auth', 'role:admin,operador'])->group(function () {
     // Cancelar pedido desde admin (y revertir stock)
     Route::post('/pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelarAdmin'])
         ->name('pedidos.cancelar');
+
+    Route::post('/pedidos/{pedido}/devolver', [PedidoController::class, 'marcarDevuelto'])
+    ->name('pedidos.devolver');
 });
 
 // =======================================================
@@ -98,6 +100,10 @@ Route::middleware(['auth', 'role:cliente'])->group(function () {
 
     Route::post('/mi-pedido/confirmar', [PedidoController::class, 'carritoConfirmar'])
         ->name('catalogo.confirmar');
+        // Pagar pedido propio
+Route::post('/mis-pedidos/{pedido}/pagar', [PedidoController::class, 'pagarCliente'])
+    ->name('cliente.pedidos.pagar');
+
 
     // Historial de pedidos del cliente
     Route::get('/mis-pedidos', [PedidoController::class, 'historialCliente'])
@@ -106,7 +112,10 @@ Route::middleware(['auth', 'role:cliente'])->group(function () {
     Route::get('/mis-pedidos/{pedido}', [PedidoController::class, 'detalleCliente'])
         ->name('cliente.pedidos.show');
 
-    // Cancelar pedido propio (solo pendientes)
-    Route::post('/mis-pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelarCliente'])
-        ->name('cliente.pedidos.cancelar');
+    Route::post('/mis-pedidos/{pedido}/pagar', [PedidoController::class, 'pagarCliente'])
+    ->name('cliente.pedidos.pagar');
+
+Route::post('/mis-pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelarCliente'])
+    ->name('cliente.pedidos.cancelar');
+
 });

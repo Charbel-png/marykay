@@ -37,18 +37,6 @@
     @csrf
 
     <div class="row g-3 mb-3">
-        <div class="col-md-4">
-            <label for="sku" class="form-label">SKU *</label>
-            <input type="text"
-                   name="sku"
-                   id="sku"
-                   class="form-control @error('sku') is-invalid @enderror"
-                   value="{{ old('sku') }}">
-            @error('sku')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
         <div class="col-md-8">
             <label for="nombre" class="form-label">Nombre *</label>
             <input type="text"

@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\User;
+use App\Models\Pedido;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -41,21 +45,27 @@ class ClienteController extends Controller
         $datos = $request->validate([
             'nombres'   => 'required|string|max:100',
             'apellidos' => 'required|string|max:100',
-            'email'     => 'nullable|email|max:150',
-            'telefono'  => 'nullable|string|max:20',
-        ], [
-            'nombres.required'   => 'El nombre del cliente es obligatorio.',
-            'apellidos.required' => 'Los apellidos son obligatorios.',
-            'email.email'        => 'El correo electrónico no tiene un formato válido.',
+            'email'     => 'required|email|max:150|unique:clientes,email|unique:users,email',
+            'telefono'  => 'nullable|string|max:50',
+            'direccion' => 'nullable|string|max:255',
         ]);
 
-        $datos['fecha_reg'] = now();
+        // 1) Crear el cliente
+        $cliente = Cliente::create($datos);
 
-        Cliente::create($datos);
+        // 2) Crear el usuario con rol "cliente"
+        //    (aquí puedes usar una contraseña fija o generar una aleatoria)
+        $passwordPlano = '123456'; // cámbiala si quieres
 
-        return redirect()
-            ->route('clientes.index')
-            ->with('success', 'Cliente registrado correctamente.');
+        User::create([
+            'name'     => $cliente->nombres . ' ' . $cliente->apellidos,
+            'email'    => $cliente->email,
+            'password' => Hash::make($passwordPlano),
+            'role'     => 'cliente',
+        ]);
+
+        return redirect()->route('clientes.index')
+            ->with('success', 'Cliente creado correctamente. Usuario creado con contraseña: ' . $passwordPlano);
     }
 
     // FORMULARIO EDITAR
@@ -101,4 +111,9 @@ class ClienteController extends Controller
                 ->with('error', 'No se puede eliminar el cliente porque tiene información relacionada.');
         }
     }
+    public function pedidos()
+{
+    return $this->hasMany(Pedido::class, 'cliente_id', 'cliente_id');
+}
+
 }

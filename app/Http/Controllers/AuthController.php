@@ -7,57 +7,50 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    // Mostrar formulario de login
     public function showLoginForm()
     {
-        if (Auth::check()) {
-            $role = Auth::user()->role;
-
-            if (in_array($role, ['admin', 'operador'])) {
-                return redirect()->route('admin.dashboard');
-            }
-
-            if ($role === 'cliente') {
-                return redirect()->route('catalogo.index');
-            }
-        }
-
         return view('auth.login');
     }
 
+    // Procesar login
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $credenciales = $request->validate([
             'email'    => 'required|email',
-            'password' => 'required',
+            'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
-            $user = Auth::user();
-
-            if (in_array($user->role, ['admin', 'operador'])) {
-                return redirect()->route('admin.dashboard');
-            }
-
-            if ($user->role === 'cliente') {
-                return redirect()->route('catalogo.index');
-            }
-
-            // Si por alguna razón tiene otro rol raro:
-            Auth::logout();
-            return redirect()->route('login')
-                ->withErrors(['email' => 'Tu rol no tiene un destino configurado.']);
+        // intenta iniciar sesión
+        if (! Auth::attempt($credenciales, $request->boolean('remember'))) {
+            return back()
+                ->withErrors(['email' => 'Las credenciales no son válidas.'])
+                ->onlyInput('email');
         }
 
-        return back()
-            ->withErrors(['email' => 'Credenciales incorrectas.'])
-            ->withInput();
+        // regenerar sesión
+        $request->session()->regenerate();
+
+        // Redirección según rol
+        $role = Auth::user()->role;
+
+        if (in_array($role, ['admin', 'operador'])) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($role === 'cliente') {
+            return redirect()->route('catalogo.index');
+        }
+
+        // por si acaso
+        return redirect()->intended('/');
     }
 
+    // Cerrar sesión
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

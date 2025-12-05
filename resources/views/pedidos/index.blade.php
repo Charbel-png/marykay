@@ -112,32 +112,50 @@
                                     ${{ number_format($pedido->total, 2) }}
                                 </td>
                                 <td class="text-end">
-                                    {{-- Ver detalle --}}
-                                    <a href="{{ route('pedidos.show', $pedido) }}"
-                                       class="btn btn-sm btn-outline-dark"
-                                       title="Ver detalle del pedido">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+    {{-- Ver detalle --}}
+    <a href="{{ route('pedidos.show', $pedido) }}"
+       class="btn btn-sm btn-outline-dark"
+       title="Ver detalle del pedido">
+        <i class="bi bi-eye"></i>
+    </a>
 
-                                    {{-- Cancelar (solo si no está ya cancelado) --}}
-                                    @php
-                                        $estadoLower = mb_strtolower($estadoNombre ?? '', 'UTF-8');
-                                    @endphp
+    @php
+        $estadoLower = mb_strtolower($estadoNombre ?? '', 'UTF-8');
+    @endphp
 
-                                    @if(!in_array($estadoLower, ['cancelado', 'cancelada']))
-                                        <form action="{{ route('pedidos.cancelar', $pedido) }}"
-                                              method="POST"
-                                              class="d-inline"
-                                              onsubmit="return confirm('¿Cancelar este pedido y regresar el stock?');">
-                                            @csrf
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    title="Cancelar pedido">
-                                                <i class="bi bi-x-circle"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td>
+    {{-- SOLO UN BOTÓN ROJO A LA VEZ --}}
+
+    {{-- 1) Cancelar → solo si está Creado / Pendiente / Pagado / Enviado --}}
+    @if(in_array($estadoLower, ['creado','pendiente','pagado','enviado']))
+        <form action="{{ route('pedidos.cancelar', $pedido) }}"
+              method="POST"
+              class="d-inline"
+              onsubmit="return confirm('¿Cancelar este pedido y regresar el stock?');">
+            @csrf
+            <button type="submit"
+                    class="btn btn-sm btn-outline-danger"
+                    title="Cancelar pedido">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </form>
+    @endif
+
+    {{-- 2) Devolver → solo si está Entregado --}}
+    @if($estadoLower === 'entregado')
+        <form action="{{ route('pedidos.devolver', $pedido) }}"
+              method="POST"
+              class="d-inline"
+              onsubmit="return confirm('¿Marcar este pedido como devuelto y regresar el stock?');">
+            @csrf
+            <button type="submit"
+                    class="btn btn-sm btn-outline-warning"
+                    title="Marcar como devuelto">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+        </form>
+    @endif
+</td>
+
                             </tr>
                         @endforeach
                     </tbody>

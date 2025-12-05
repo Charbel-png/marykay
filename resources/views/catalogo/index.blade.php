@@ -16,7 +16,7 @@
         <input type="text"
                name="q"
                class="form-control form-control-sm me-2"
-               placeholder="Buscar por nombre o SKU"
+               placeholder="Buscar"
                value="{{ request('q') }}">
         <button class="btn btn-sm btn-outline-dark"
                 type="submit"
@@ -146,7 +146,6 @@
                     <div class="mb-2" style="max-height: 160px; overflow-y: auto;">
                         @foreach($carrito as $item)
                             @php
-                                // 👇 Aquí se calcula SIEMPRE el subtotal
                                 $subtotal = $item['precio'] * $item['cantidad'];
                             @endphp
                             <div class="d-flex justify-content-between mb-1">
